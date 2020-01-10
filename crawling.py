@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
 
-
 api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
 
 max_depth = 1
