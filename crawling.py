@@ -5,7 +5,7 @@ from tf_idf import Tf_idf
 
 api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
 
-max_depth = 1
+max_depth = 2
 url = 'http://hosp.ajoumc.or.kr/HospitalGuide/ParkingInfo.aspx'
 
 chrome_options = webdriver.ChromeOptions()
@@ -66,10 +66,8 @@ def search(urls, depth):
 
     links = getLink(urls)
     keyword = set()
-    #
     if urls not in visited_pages:
         links.insert(0,urls)
-    #
 
     for n in links:
         page_norm = []
@@ -85,12 +83,10 @@ def search(urls, depth):
                             temp.append(morph.lex)
                         if len(temp):
                             page_norm.append(temp)
-        #
         temp_cl=Tf_idf(page_norm,n)
         temp_df_dict=temp_cl.get_wordFreq_page()    # get word's tf from page
         homepages.append(temp_cl)
         update_df_dict(temp_df_dict,df_dict) # update total word's df
-        #
         keywords.append(keyword)
         search(n, depth)
 
@@ -100,13 +96,15 @@ def cal_tf_idf(homepages):
     pass
 
 def get_target_page(homepages,input_words):
-    m=0
+    m=10000
     for page in homepages:
         score=0
         for word in input_words:
-            if word in page.tf_idf_dict:
-                score+=page.tf_idf_dict[word]
-        if score>m:
+            if word in page.word_rank:
+                score+=page.word_rank[word]
+            else:
+                score+=200
+        if score<m:
             m=score
             target_page=page.url
     return target_page
@@ -116,14 +114,20 @@ def file_write(homepages,df_dict):
         for page in homepages:
             fp.write(page.url)
             fp.write('\n')
+            for line in page.text:
+                fp.write(' '.join(line))
+                fp.write('\n')
             for x in page.sort_dict():
                 fp.write(''.join('%s %s' %x))
-                fp.write(' %f' %page.tf_dict[x[0]])
-                fp.write(' %f' %df_dict[x[0]])
+                fp.write(' %d' %page.word_rank[x[0]])
+                fp.write(' %d' %page.tf_dict[x[0]])
+                fp.write(' %d' %df_dict[x[0]])
                 fp.write('\n')
 
 search(url, 0)
 cal_tf_idf(homepages)
+for page in homepages:
+    page.get_word_rank()
 file_write(homepages,df_dict)
 
 while(1):
