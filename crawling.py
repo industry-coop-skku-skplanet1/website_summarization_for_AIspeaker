@@ -90,7 +90,6 @@ def search(urls, depth):
         temp_df_dict=temp_cl.get_wordFreq_page()    # get word's tf from page
         homepages.append(temp_cl)
         update_df_dict(temp_df_dict,df_dict) # update total word's df
-        #print(n,temp_cl.tf_dict)
         #
         keywords.append(keyword)
         search(n, depth)
@@ -100,13 +99,40 @@ def cal_tf_idf(homepages):
         page.get_tf_idf(df_dict,len(keywords))
     pass
 
+def get_target_page(homepages,input_words):
+    m=0
+    for page in homepages:
+        score=0
+        for word in input_words:
+            if word in page.tf_idf_dict:
+                score+=page.tf_idf_dict[word]
+        if score>m:
+            m=score
+            target_page=page.url
+    return target_page
+
+def file_write(homepages,df_dict):
+    with open('result.txt','w') as fp:
+        for page in homepages:
+            fp.write(page.url)
+            fp.write('\n')
+            for x in page.sort_dict():
+                fp.write(''.join('%s %s' %x))
+                fp.write(' %f' %page.tf_dict[x[0]])
+                fp.write(' %f' %df_dict[x[0]])
+                fp.write('\n')
 
 search(url, 0)
 cal_tf_idf(homepages)
-f=open("result.txt",'w')
-for page in homepages:
-    #print(page.url,page.sort_dict())
-    f.write(page.url)
-    f.writelines(page.sort_dict())
-f.close()
+file_write(homepages,df_dict)
+
+while(1):
+    list1=[]
+    while(1):
+        temp=input("input keywords: ")
+        if temp!='exit':
+            list1.append(temp)
+        else:
+            break
+    print(get_target_page(homepages,list1))
 print("FINISH")
