@@ -4,17 +4,17 @@ from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
 import math
 
-api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
+api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
 
-max_depth = 4
-url = 'http://sev.iseverance.com/'
-filter_domain='http://sev.iseverance.com/'
+max_depth = 2
+url = 'http://hosp.ajoumc.or.kr/'
+filter_domain='hosp.ajoumc.or.kr/'
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome('../chrome/chromedriver_linux64/chromedriver',chrome_options=chrome_options)
+driver = webdriver.Chrome('./chrome/chromedriver_linux64/chromedriver',chrome_options=chrome_options)
 driver.implicitly_wait(3)
 driver.set_page_load_timeout(5)
 
