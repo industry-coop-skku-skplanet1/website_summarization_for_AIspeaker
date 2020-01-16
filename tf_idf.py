@@ -19,8 +19,6 @@ class Tf_idf:
 					temp_df_dict[word]=1		# get DF
 				else:
 					self.tf_dict[word]+=1	# get TF
-				#if word not in temp_df_dict.keys():		# get DF
-					#temp_df_dict[word]=1
 
 		return temp_df_dict
 
