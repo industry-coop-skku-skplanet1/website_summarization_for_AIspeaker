@@ -11,6 +11,7 @@ max_depth = 2
 url = 'http://sev.iseverance.com/guidance/map_drctn/location/'
 filter_domain='http://sev.iseverance.com'
 
+
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
@@ -49,7 +50,7 @@ def getLink(urls):
                 link.attrs['href']=urljoin(filter_domain,link.attrs['href'])
             if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
             and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
-            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']
+            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']:
                 newPage = link.attrs['href']
                 visited_pages.add(newPage)
                 links.append(newPage)
