@@ -2,13 +2,15 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
+from urllib.parse import urljoin
 import math
 
 api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
 
-max_depth = 4
-url = 'http://sev.iseverance.com/'
-filter_domain='http://sev.iseverance.com/'
+max_depth = 2
+url = 'http://sev.iseverance.com/guidance/map_drctn/location/'
+filter_domain='http://sev.iseverance.com'
+avoid_url='dept_clinic'
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -44,9 +46,18 @@ def getLink(urls):
     links = []
     for link in sources_tag_a:
         if 'href' in link.attrs:
+            # if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
+            # and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
+            # and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']:
+            #     newPage = link.attrs['href']
+            #     visited_pages.add(newPage)
+            #     links.append(newPage)
+            if 'http' not in link.attrs['href'] and '#' not in link.attrs['href']:
+                link.attrs['href']=urljoin(filter_domain,link.attrs['href'])
             if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
             and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
-            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']:
+            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href'] \
+            and avoid_url not in link.attrs['href']:
                 newPage = link.attrs['href']
                 visited_pages.add(newPage)
                 links.append(newPage)
@@ -62,7 +73,7 @@ def update_df_dict(page_df_dict,df_dict):
     pass
 
 def search(urls, depth):
-    print(len(keywords),urls)
+    print(len(keywords),depth+1,urls)
     depth += 1
     if depth > max_depth:
         return
@@ -117,9 +128,9 @@ def file_write(homepages,df_dict):
         for page in homepages:
             fp.write(page.url)
             fp.write('\n')
-            # for line in page.text:
-            #     fp.write(' '.join(line))
-            #     fp.write('\n')
+            for line in page.text:
+                fp.write(' '.join(line))
+                fp.write('\n')
             for x in page.sort_dict():
                 fp.write(''.join('%s %s' %x))
                 fp.write(' %d' %page.word_rank[x[0]])
