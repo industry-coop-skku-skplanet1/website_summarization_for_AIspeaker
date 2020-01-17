@@ -11,7 +11,7 @@ class Tag_parser :
         self.contents = {}
         self.stopwords = ['<!','script','function','#']
         ###
-        self.url = 'http://www.snuh.org/content/M001004001.do'
+        self.url = 'http://hosp.ajoumc.or.kr/MedicalInfo/LeaveHospitalGuide.aspx'
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
@@ -52,7 +52,7 @@ class Tag_parser :
                 if child.isspace() or len(self.tags) == 0 : # lear node, don't print spaces or non-tag
                     continue
                 else:
-                    if 'h' in self.tags[-1] or 'span' in self.tags[-1]:  # append headline
+                    if 'h' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
                         self.titles[self.tags[-1]] = child
                     else:
                         if str(self.titles.values()) in self.contents.keys():  # to protect dict from overlapping
