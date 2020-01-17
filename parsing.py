@@ -1252,21 +1252,37 @@ window.status = 'VIEWSTATE : ' + document.getElementById("__VIEWSTATE").value.le
         self.tags = []
         self.titles = {}
         self.contents = {}
+        self.stopwords = ['<!','script','function']
+
+
         self.recursiveChildren(soup)
+
+    def isstopWord(self,args):
+        for word in self.stopwords:
+            if word in args or '\n' == args or str(type(args)) == "<class 'bs4.element.Comment'>":
+                return True
+
+        return False
 
     def recursiveChildren(self,x):
         for child in x.recursiveChildGenerator():
+            if self.isstopWord(child):
+                continue
+
             name = getattr(child, "name", None)
             if name is not None:
                 self.tags.append(name)
             else:
-                if child.isspace() or len(self.tags) == 0 : # lear node, don't print spaces
+                if child.isspace() or len(self.tags) == 0 : # lear node, don't print spaces or non-tag
                     continue
                 else:
-                    if 'h' in self.tags[-1] or 'span' in self.tags[-1]:
+                    if 'h' in self.tags[-1] or 'span' in self.tags[-1]:  # append headline
                         self.titles[self.tags[-1]] = child
                     else:
-                        self.contents[str(self.titles.values())] = child
+                        if str(self.titles.values()) in self.contents.keys():  # to protect dict from overlapping
+                            continue
+                        else:
+                            self.contents[str(self.titles.values())] = child  # set contents {title : contents}
                 if len(self.tags):
                     self.tags.pop(-1)
 
