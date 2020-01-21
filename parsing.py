@@ -5,23 +5,13 @@ from selenium import webdriver
 
 
 class Tag_parser :
-    def __init__(self):
+    def __init__(self,soup):
         self.tags = []
         self.titles = {}
         self.contents = {}
         self.stopwords = ['<!','script','function','#']
         ###
-        self.url = 'http://www.snuh.org/content/M001004001.do'
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        driver = webdriver.Chrome('./chrome/chromedriver_linux64/chromedriver', chrome_options=chrome_options)
-        driver.implicitly_wait(3)
-        driver.set_page_load_timeout(5)
-        driver.get(self.url)
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
+
 
         self.recursiveChildren(soup)
 
@@ -65,9 +55,3 @@ class Tag_parser :
 
     def h_tag_parser(self):
         pass
-
-
-t = Tag_parser()
-
-for title in t.contents :
-    print('title is ', title ,"contents is ", t.contents[title] )

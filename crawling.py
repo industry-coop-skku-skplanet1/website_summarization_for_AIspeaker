@@ -7,9 +7,9 @@ import math
 
 api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
 
-max_depth = 2
-url = 'http://sev.iseverance.com/guidance/map_drctn/location/'
-filter_domain='http://sev.iseverance.com'
+max_depth = 3
+url = 'http://hosp.ajoumc.or.kr/'
+filter_domain='http://hosp.ajoumc.or.kr/'
 
 
 chrome_options = webdriver.ChromeOptions()
@@ -88,8 +88,8 @@ def search(urls, depth):
                     for morph in word.morphs:
                         if 'NN' in morph.tag:
                             temp.append(morph.lex)
-                        if len(temp):
-                            page_norm.append(temp)
+                    if len(temp):
+                        page_norm.append(temp)
         temp_cl=Tf_idf(page_norm,n)
         temp_df_dict=temp_cl.get_wordFreq_page()    # get word's tf from page
         homepages.append(temp_cl)

@@ -1,9 +1,11 @@
 import math
 import operator
+from parsing import Tag_parser
 
-class Tf_idf:
+class Tf_idf():
 	def __init__(self,text,url):
 		self.text = text
+	#def __init__(self,url):
 		self.url = url
 		self.tf_dict={}
 		self.tf_idf_dict={}
