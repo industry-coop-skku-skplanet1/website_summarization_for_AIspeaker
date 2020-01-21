@@ -2,7 +2,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
-from urllib.parse import urljoin
+import parsing
 import math
 
 api = KhaiiiApi('../khaiii/khaiii/build/lib/libkhaiii.so.0.4', '../khaiii/khaiii/build/share/khaiii')
@@ -26,7 +26,8 @@ df_dict={}  # total word df
 homepages=[]    # total pages visited
 
 
-def getPage(tag, urls):
+
+def getPage(tag, urls, flag):  # flag : true(contents mode) false(soup mode)
     try:
         driver.get(urls)
         html = driver.page_source
@@ -34,20 +35,20 @@ def getPage(tag, urls):
     except:
         return []
 
-    if soup.find('html', {'lang': 'ko'}) is None:
-        return []
-    contents = soup.find_all(tag)
+    if flag:
+        if soup.find('html', {'lang': 'ko'}) is None:
+            return []
 
-    return contents
-
+        contents = soup.find_all(tag)
+        return contents
+    else:
+        return soup
 
 def getLink(urls):
-    sources_tag_a = getPage('a', urls)
+    sources_tag_a = getPage('a', urls,True)
     links = []
     for link in sources_tag_a:
         if 'href' in link.attrs:
-            if 'http' not in link.attrs['href'] and '#' not in link.attrs['href']:
-                link.attrs['href']=urljoin(filter_domain,link.attrs['href'])
             if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
             and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
             and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']:
@@ -78,18 +79,21 @@ def search(urls, depth):
 
     for n in links:
         page_norm = []
-        contents = getPage('div', n)
-        for c in contents:
-            text_contents = c.get_text().replace('\n', ' ').replace('\xa0', ' ').strip()
-            if text_contents != '' and 'function' not in text_contents:  # keyword = search word 판단부분
-                keyword.add(text_contents)
-                for word in api.analyze(text_contents):
-                    temp = []
-                    for morph in word.morphs:
-                        if 'NN' in morph.tag:
-                            temp.append(morph.lex)
-                    if len(temp):
-                        page_norm.append(temp)
+        parser = parsing.Tag_parser(getPage('None',n,False))
+        contents = list(parser.contents.keys())
+
+        for c in list(contents):
+            for text_contents in list(c):
+                for text in text_contents:
+                    if text != '' and 'function' not in text:  # keyword = search word 판단부분
+                        keyword.add(text)
+                        for word in api.analyze(text):
+                            temp = []
+                            for morph in word.morphs:
+                                if 'NN' in morph.tag:
+                                    temp.append(morph.lex)
+                            if len(temp):
+                                page_norm.append(temp)
         temp_cl=Tf_idf(page_norm,n)
         temp_df_dict=temp_cl.get_wordFreq_page()    # get word's tf from page
         homepages.append(temp_cl)
@@ -131,11 +135,14 @@ def file_write(homepages,df_dict):
                 fp.write(' %d' %df_dict[x[0]])
                 fp.write('\n')
 
+
 search(url, 0)
 cal_tf_idf(homepages)
 for page in homepages:
     page.get_word_rank()
 file_write(homepages,df_dict)
+
+
 
 while(1):
     list1=[]
