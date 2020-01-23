@@ -3,11 +3,11 @@ from bs4 import BeautifulSoup
 from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
 import parsing
-import math
+import contents_print
 
 api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
 
-max_depth = 2
+max_depth = 1
 url = 'http://hosp.ajoumc.or.kr/'
 filter_domain='hosp.ajoumc.or.kr/'
 
@@ -17,13 +17,13 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 driver = webdriver.Chrome('./chrome/chromedriver_linux64/chromedriver',chrome_options=chrome_options)
 driver.implicitly_wait(3)
-driver.set_page_load_timeout(5)
+driver.set_page_load_timeout(100)
 
 visited_pages = set()
 keywords = []
 df_dict={}  # total word df
 homepages=[]    # total pages visited
-
+parser_dict = {}
 
 
 def getPage(tag, urls, flag):  # flag : true(contents mode) false(soup mode)
@@ -50,7 +50,8 @@ def getLink(urls):
         if 'href' in link.attrs:
             if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
             and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
-            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href']:
+            and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href'] and 'login' not in link.attrs['href'] \
+            and 'Login' not in link.attrs['href']:
                 newPage = link.attrs['href']
                 visited_pages.add(newPage)
                 links.append(newPage)
@@ -79,6 +80,13 @@ def search(urls, depth):
     for n in links:
         page_norm = []
         parser = parsing.Tag_parser(getPage('None',n,False))
+
+        ''' test code
+        for i in parser.contents:
+            print('Title : ',i,"  contents : ",parser.contents[i])
+        '''
+        parser_dict[n] = parser
+
         contents = list(parser.contents.keys())
 
         for c in list(contents):
@@ -152,4 +160,9 @@ while(1):
         else:
             break
     print(get_target_page(homepages,list1))
+    target_page_url = get_target_page(homepages, list1)
+
+    for i in parser_dict[target_page_url].contents:
+        print(i," : ",parser_dict[target_page_url].contents[i])
+#   print(contents_print.find_contents(parser_dict[target_page_url],list1))
 print("FINISH")

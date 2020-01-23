@@ -70,6 +70,7 @@ class Tag_parser :
 
             if name == 'img':
                 child = self.imgTagparse(child)
+                self.tags.append(name)
                 name = None
 
 
@@ -79,11 +80,16 @@ class Tag_parser :
                 if child.isspace() or len(self.tags) == 0 or child == '':  # lear node, don't print spaces or non-tag
                     continue
                 else:
-                    if 'h' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
-                        self.titles[self.tags[-1]] = child
+                    if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
+                        if 'img' in self.tags[-1] and 'h' in self.tags[-2]:
+                            self.titles[self.tags[-2]] = child
+                        else:
+                            self.titles[self.tags[-1]] = child
                     else:
                         self.titles['word_from_contents'] = self.extract_words(child)
+
                         self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
+                        print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
 
 
                 if len(self.tags):
