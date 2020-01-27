@@ -81,15 +81,15 @@ class Tag_parser :
                     continue
                 else:
                     if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
-                        if 'img' in self.tags[-1] and 'h' in self.tags[-2]:
+                        if 'img' in self.tags[-1] and 'h' in self.tags[-2]: # img tag in headline
                             self.titles[self.tags[-2]] = child
-                        else:
+                        elif 'h' in self.tags[-1]: # just headline
                             self.titles[self.tags[-1]] = child
                     else:
                         self.titles['word_from_contents'] = self.extract_words(child)
 
                         self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
-                        print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
+                        # print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
 
 
                 if len(self.tags):
