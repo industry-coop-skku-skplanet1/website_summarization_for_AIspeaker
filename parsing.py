@@ -52,6 +52,8 @@ class Tag_parser :
 
     def extract_words(self,text):
         temp = []
+        if text == '': return temp
+
         for word in self.api.analyze(text):
             for morph in word.morphs:
                 if 'NN' in morph.tag:
@@ -61,40 +63,68 @@ class Tag_parser :
             return temp
 
 
+    def parents_name(self,link,tag):
+        name = []
+        if(type(link) == type('')) : return False
+        for p in link.parents:
+            name.append(p.name)
+
+        if(tag in name) : return True
+        else : return False
+
+
+
 
     def recursiveChildren(self,x):
-        for child in x.recursiveChildGenerator():
-            if self.isstopWord(child):
-                continue
-            name = getattr(child, "name", None)
-
-            if name == 'img':
-                child = self.imgTagparse(child)
-                self.tags.append(name)
-                name = None
-
-
-            if name is not None:
-                self.tags.append(name)
-            else:
-                if child.isspace() or len(self.tags) == 0 or child == '':  # lear node, don't print spaces or non-tag
+        try:
+            for child in x.recursiveChildGenerator():
+                if self.isstopWord(child):
                     continue
-                else:
-                    if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
-                        if 'img' in self.tags[-1] and 'h' in self.tags[-2]: # img tag in headline
-                            self.titles[self.tags[-2]] = child
-                        elif 'h' in self.tags[-1]: # just headline
-                            self.titles[self.tags[-1]] = child
+                name = getattr(child, "name", None)
+
+                if name == 'img':
+                    child = self.imgTagparse(child)
+                    self.tags.append(name)
+                    name = None
+
+                elif name == 'table':
+
+                    ############  write code here .(do not erase continue) ########################
+
+
+
+                    continue
+
+                if name is not None:
+                    if 'li' == name:
+                        self.titles['word_from_contents'] = self.extract_words(child.get_text().strip())
+                        self.contents[self.dictvalue_to_list(self.titles)] = [child.get_text().strip()]  # set contents {title : contents}
                     else:
-                        self.titles['word_from_contents'] = self.extract_words(child)
 
-                        self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
-                        # print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
+                        self.tags.append(name)
+                else:
+                    if child.isspace() or len(self.tags) == 0 or child == '':  # lear node, don't print spaces or non-tag
+                        continue
+                    else:
+                        if self.parents_name(child, 'li'):
+                            continue
+
+                        if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
+                            if 'img' in self.tags[-1] and 'h' in self.tags[-2]: # img tag in headline
+                                self.titles[self.tags[-2]] = child
+                            elif 'h' in self.tags[-1]: # just headline
+                                self.titles[self.tags[-1]] = child
+                        else:
+                            self.titles['word_from_contents'] = self.extract_words(child)
+                            self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
+                            # print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
 
 
-                if len(self.tags):
-                    self.tags.pop(-1)
-
+                    if len(self.tags):
+                        self.tags.pop(-1)
+        except Exception as ex:
+            print("error ",ex)
+            return
 
 
 

@@ -7,9 +7,9 @@ import contents_print
 
 api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
 
-max_depth = 1
-url = 'http://hosp.ajoumc.or.kr/'
-filter_domain='hosp.ajoumc.or.kr/'
+max_depth = 3
+url = 'http://bundang.chamc.co.kr/'
+filter_domain='bundang.chamc.co.kr'
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -162,7 +162,7 @@ while(1):
     print(get_target_page(homepages,list1))
     target_page_url = get_target_page(homepages, list1)
 
-    #for i in parser_dict[target_page_url].contents:
-    #    print(i," : ",parser_dict[target_page_url].contents[i])
+    for i in parser_dict[target_page_url].contents:
+        print(i," : ",parser_dict[target_page_url].contents[i])
     print(contents_print.find_contents(parser_dict[target_page_url],list1))
 print("FINISH")
