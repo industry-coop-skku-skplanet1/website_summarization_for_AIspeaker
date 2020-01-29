@@ -5,12 +5,13 @@ from selenium import webdriver
 from khaiii import KhaiiiApi
 
 class Tag_parser :
-    def __init__(self,soup):
+    def __init__(self,soup,pre_parser):
         self.tags = []
         self.titles = {}
         self.contents = {}
         self.stopwords = ['<!','script','function','#']
         self.api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
+        self.pre_parser = pre_parser
         '''
         self.url = 'http://hosp.ajoumc.or.kr/MedicalInfo/HospitalRoomGuide.aspx'
         chrome_options = webdriver.ChromeOptions()
@@ -72,7 +73,13 @@ class Tag_parser :
         if(set(tag) & set(name)) : return True
         else : return False
 
+    def is_overlapped(self,contents):
+        if self.pre_parser == '': return False  # first page
 
+        for i in self.pre_parser.contents:
+            if self.pre_parser.contents[i] == contents:
+                return True
+        return False
 
 
     def recursiveChildren(self,x):
@@ -93,8 +100,11 @@ class Tag_parser :
 
                     if 'li' == name:
                         ##### insertion to contents dict code
-                        self.titles['word_from_contents'] = self.extract_words(child.get_text().strip())
-                        self.contents[self.dictvalue_to_list(self.titles)] = [child.get_text().strip()]
+                        if self.is_overlapped([child.get_text().strip()]):
+                            continue
+                        else:
+                            self.titles['word_from_contents'] = self.extract_words(child.get_text().strip())
+                            self.contents[self.dictvalue_to_list(self.titles)] = [child.get_text().strip()]
                         ######
                     elif 'table' == name:
 
@@ -115,8 +125,11 @@ class Tag_parser :
                             elif 'h' in self.tags[-1]: # just headline
                                 self.titles[self.tags[-1]] = child
                         else:
-                            self.titles['word_from_contents'] = self.extract_words(child)
-                            self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
+                            if self.is_overlapped([child.strip()]):
+                                continue
+                            else:
+                                self.titles['word_from_contents'] = self.extract_words(child)
+                                self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
                             # print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
 
 

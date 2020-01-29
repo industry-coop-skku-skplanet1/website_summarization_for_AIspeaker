@@ -65,7 +65,7 @@ def update_df_dict(page_df_dict,df_dict):
             df_dict[word]=1
     pass
 
-def search(urls, depth):
+def search(urls, depth,pre_parser):
 
     print(len(keywords),urls)
     depth += 1
@@ -79,7 +79,7 @@ def search(urls, depth):
 
     for n in links:
         page_norm = []
-        parser = parsing.Tag_parser(getPage('None',n,False))
+        parser = parsing.Tag_parser(getPage('None',n,False),pre_parser)
 
         ''' test code
         for i in parser.contents:
@@ -107,7 +107,7 @@ def search(urls, depth):
         update_df_dict(temp_df_dict,df_dict) # update total word's df
         keywords.append(keyword)
         pre_parser = parser
-        search(n, depth)
+        search(n, depth,parser)
 
 def cal_tf_idf(homepages):
     for page in homepages:
@@ -144,7 +144,7 @@ def file_write(homepages,df_dict):
                 fp.write('\n')
 
 
-search(url, 0)
+search(url, 0,'')
 cal_tf_idf(homepages)
 for page in homepages:
     page.get_word_rank()
@@ -163,7 +163,7 @@ while(1):
     print(get_target_page(homepages,list1))
     target_page_url = get_target_page(homepages, list1)
 
-#    for i in parser_dict[target_page_url].contents:
-#        print(i," : ",parser_dict[target_page_url].contents[i])
+    for i in parser_dict[target_page_url].contents:
+        print(i," : ",parser_dict[target_page_url].contents[i])
     print(contents_print.find_contents(parser_dict[target_page_url],list1))
 print("FINISH")
