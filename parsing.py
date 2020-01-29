@@ -3,9 +3,10 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from khaiii import KhaiiiApi
+import table_reader
 
 class Tag_parser :
-    def __init__(self,soup):
+    def __init__(self,soup,url):
         self.tags = []
         self.titles = {}
         self.contents = {}
@@ -26,6 +27,9 @@ class Tag_parser :
         '''
 
         self.recursiveChildren(soup)
+        #
+        self.tables=table_reader.get_all_tables(url)
+        self.table_count=0
 
     def isstopWord(self,args):
         for word in self.stopwords:
@@ -70,6 +74,7 @@ class Tag_parser :
 
             if name == 'img':
                 child = self.imgTagparse(child)
+                self.tags.append(name)
                 name = None
 
 
@@ -79,11 +84,21 @@ class Tag_parser :
                 if child.isspace() or len(self.tags) == 0 or child == '':  # lear node, don't print spaces or non-tag
                     continue
                 else:
-                    if 'h' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
-                        self.titles[self.tags[-1]] = child
+                    if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
+                        if 'img' in self.tags[-1] and 'h' in self.tags[-2]: # img tag in headline
+                            self.titles[self.tags[-2]] = child
+                        elif 'h' in self.tags[-1]: # just headline
+                            self.titles[self.tags[-1]] = child
+                    #
+                    # elif 'table' in self.tags[-1]:
+                    #     print(self.tables[self.table_count])
+                    #     self.table_count+=1
+                    #  
                     else:
                         self.titles['word_from_contents'] = self.extract_words(child)
+
                         self.contents[self.dictvalue_to_list(self.titles)] = [child.strip()]  # set contents {title : contents}
+                        #print(self.titles,' : ', self.contents[self.dictvalue_to_list(self.titles)])
 
 
                 if len(self.tags):
