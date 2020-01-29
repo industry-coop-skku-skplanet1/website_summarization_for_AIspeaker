@@ -69,7 +69,7 @@ class Tag_parser :
         for p in link.parents:
             name.append(p.name)
 
-        if(tag in name) : return True
+        if(set(tag) & set(name)) : return True
         else : return False
 
 
@@ -87,26 +87,26 @@ class Tag_parser :
                     self.tags.append(name)
                     name = None
 
-                elif name == 'table':
 
-                    ############  write code here .(do not erase continue) ########################
-
-
-
-                    continue
 
                 if name is not None:
-                    if 'li' == name:
-                        self.titles['word_from_contents'] = self.extract_words(child.get_text().strip())
-                        self.contents[self.dictvalue_to_list(self.titles)] = [child.get_text().strip()]  # set contents {title : contents}
-                    else:
 
+                    if 'li' == name:
+                        ##### insertion to contents dict code
+                        self.titles['word_from_contents'] = self.extract_words(child.get_text().strip())
+                        self.contents[self.dictvalue_to_list(self.titles)] = [child.get_text().strip()]
+                        ######
+                    elif 'table' == name:
+
+                        ############  write code here . ########################
+                        pass
+                    else:
                         self.tags.append(name)
                 else:
                     if child.isspace() or len(self.tags) == 0 or child == '':  # lear node, don't print spaces or non-tag
                         continue
                     else:
-                        if self.parents_name(child, 'li'):
+                        if self.parents_name(child, ['li','table']):
                             continue
 
                         if 'h' in self.tags[-1] or 'img' in self.tags[-1]:  # or 'span' in self.tags[-1]:  # append headline
@@ -122,6 +122,9 @@ class Tag_parser :
 
                     if len(self.tags):
                         self.tags.pop(-1)
+
+
+
         except Exception as ex:
             print("error ",ex)
             return

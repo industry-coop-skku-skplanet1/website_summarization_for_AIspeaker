@@ -7,9 +7,9 @@ import contents_print
 
 api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
 
-max_depth = 3
-url = 'http://bundang.chamc.co.kr/'
-filter_domain='bundang.chamc.co.kr'
+max_depth = 1
+url = 'http://hosp.ajoumc.or.kr/Index.aspx'
+filter_domain='hosp.ajoumc.or.kr'
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -24,7 +24,6 @@ keywords = []
 df_dict={}  # total word df
 homepages=[]    # total pages visited
 parser_dict = {}
-
 
 def getPage(tag, urls, flag):  # flag : true(contents mode) false(soup mode)
     try:
@@ -67,6 +66,7 @@ def update_df_dict(page_df_dict,df_dict):
     pass
 
 def search(urls, depth):
+
     print(len(keywords),urls)
     depth += 1
     if depth > max_depth:
@@ -106,6 +106,7 @@ def search(urls, depth):
         homepages.append(temp_cl)
         update_df_dict(temp_df_dict,df_dict) # update total word's df
         keywords.append(keyword)
+        pre_parser = parser
         search(n, depth)
 
 def cal_tf_idf(homepages):
@@ -162,7 +163,7 @@ while(1):
     print(get_target_page(homepages,list1))
     target_page_url = get_target_page(homepages, list1)
 
-    for i in parser_dict[target_page_url].contents:
-        print(i," : ",parser_dict[target_page_url].contents[i])
+#    for i in parser_dict[target_page_url].contents:
+#        print(i," : ",parser_dict[target_page_url].contents[i])
     print(contents_print.find_contents(parser_dict[target_page_url],list1))
 print("FINISH")

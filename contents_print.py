@@ -16,6 +16,8 @@ def find_contents(parser,search_word):
                 if 'NN' in morph.tag:
                     search_word_with_NLP.append(morph.lex)
 
+
+
     search_word_with_NLP = tuple(search_word_with_NLP)
 
     for title_line in parser.contents:
