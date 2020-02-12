@@ -3,6 +3,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from khaiii import KhaiiiApi
+import jellyfish as j
 
 class Tag_parser :
     def __init__(self,soup,pre_parser):
@@ -77,7 +78,7 @@ class Tag_parser :
         if self.pre_parser == '': return False  # first page
 
         for i in self.pre_parser.contents:
-            if self.pre_parser.contents[i] == contents:
+            if j.jaro_distance(self.pre_parser.contents[i][0],contents[0]) >= 0.6 or contents[0] == "":
                 return True
         return False
 

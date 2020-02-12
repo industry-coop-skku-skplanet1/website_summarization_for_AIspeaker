@@ -4,12 +4,17 @@ from khaiii import KhaiiiApi
 from tf_idf import Tf_idf
 import parsing
 import contents_print
+import client
+from urllib.parse import urljoin
+import re
+
 
 api = KhaiiiApi('./khaiii/khaiii/build/lib/libkhaiii.0.4.dylib', './khaiii/khaiii/build/share/khaiii')
+db = client.ClientDb()
 
-max_depth = 1
-url = 'http://hosp.ajoumc.or.kr/Index.aspx'
-filter_domain='hosp.ajoumc.or.kr'
+max_depth = 3
+url = 'https://www.mma.go.kr/'
+filter_domain='http://www.mma.go.kr/'
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -24,6 +29,8 @@ keywords = []
 df_dict={}  # total word df
 homepages=[]    # total pages visited
 parser_dict = {}
+url_idx = {}
+idx = 1
 
 def getPage(tag, urls, flag):  # flag : true(contents mode) false(soup mode)
     try:
@@ -47,6 +54,8 @@ def getLink(urls):
     links = []
     for link in sources_tag_a:
         if 'href' in link.attrs:
+            if 'http' not in link.attrs['href'] and '#' not in link.attrs['href']:
+                link.attrs['href']=urljoin(urls,link.attrs['href'])
             if link.attrs['href'] not in visited_pages and 'http' in link.attrs['href'] \
             and filter_domain in link.attrs['href'] and 'pdf' not in link.attrs['href'] \
             and 'hwp' not in link.attrs['href'] and 'zip' not in link.attrs['href'] and 'login' not in link.attrs['href'] \
@@ -106,8 +115,41 @@ def search(urls, depth,pre_parser):
         homepages.append(temp_cl)
         update_df_dict(temp_df_dict,df_dict) # update total word's df
         keywords.append(keyword)
-        pre_parser = parser
-        search(n, depth,parser)
+
+        url_idx[n] = len(keywords)
+
+        if pre_parser == '':
+            pre_parser = parser
+        insert_data_to_DB(parser,len(keywords))
+
+        search(n, depth,pre_parser)
+
+
+
+def insert_data_to_DB(parser,idx):
+    t_name = str(idx)+"_data"
+    db.createTable(t_name)
+
+    for title in parser.contents:
+        temp_title = str(title).strip().replace('(','').replace(')','').replace('\n','').replace('\'','')
+        temp_content = str(parser.contents[title]).replace('[','').replace(']','').replace('\n','').replace('\'','').replace('\\n','').strip()
+        #temp_title = re.escape(temp_title)
+        #temp_content = re.escape(temp_content)
+
+        db.insert(t_name,temp_title,temp_content)
+
+def insert_rank_to_DB(page,idx):
+    t_name = str(idx) + "_rank"
+    try:
+        db.createTable(t_name)
+
+        for word in page.word_rank:
+            t_word = str(word)
+            t_rank = str(page.word_rank[word])
+
+            db.insert(t_name,t_word,t_rank)
+    except:
+        return
 
 def cal_tf_idf(homepages):
     for page in homepages:
@@ -146,8 +188,12 @@ def file_write(homepages,df_dict):
 
 search(url, 0,'')
 cal_tf_idf(homepages)
+db.createTable("max_page")
+db.insert("max_page","max",str(len(keywords)))
+
 for page in homepages:
     page.get_word_rank()
+    insert_rank_to_DB(page,url_idx[page.url])
 file_write(homepages,df_dict)
 
 
